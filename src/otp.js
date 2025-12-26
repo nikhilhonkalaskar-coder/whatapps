@@ -10,25 +10,21 @@ router.post("/send-otp", async (req, res) => {
   try {
     const { name, phone, email, city } = req.body;
 
-    // Validate input
     if (!phone) {
-      return res.status(400).json({ error: "Phone number is required" });
+      return res.status(400).json({ error: "Phone required" });
     }
 
-    // Increment response number
     responseCounter++;
 
-    // Prepare the message
     const message = `*Response* #${responseCounter}
 
 *Tushar Bhumkar Institute (#premium commodity शेअर मार्केट क्लासेस)*
 
-*Full Name :* ${name || "-"}
+*Full Name :* ${name}
 *Mobile Number :* ${phone}
-*Email :* ${email || "-"}
-*City :* ${city || "-"}`;
+*Email :* ${email}
+*City :* ${city}`;
 
-    // Send message via Interakt
     const apiRes = await fetch("https://api.interakt.ai/v1/public/message/", {
       method: "POST",
       headers: {
@@ -37,7 +33,7 @@ router.post("/send-otp", async (req, res) => {
       },
       body: JSON.stringify({
         countryCode: "91",
-        phoneNumber: phone,   // sending OTP/message to the user
+        phoneNumber: process.env.SALES_NUMBER,
         type: "text",
         text: message
       })
@@ -45,17 +41,11 @@ router.post("/send-otp", async (req, res) => {
 
     const data = await apiRes.json();
 
-    // Check for API errors
-    if (!data.result) {
-      return res.status(400).json({ success: false, interakt: data });
-    }
-
-    // Success response
     res.json({ success: true, interakt: data });
 
   } catch (err) {
-    console.error("Error sending OTP:", err);
-    res.status(500).json({ error: "Failed to send OTP/message" });
+    console.error(err);
+    res.status(500).json({ error: "OTP failed" });
   }
 });
 
